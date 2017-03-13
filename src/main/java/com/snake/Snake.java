@@ -7,29 +7,61 @@ public class Snake {
 
 	private int posX;
 	private int posY;
-	private int sizeX = 10;
-	private int sizeY = 10;
-	private int speed = 2;
+	private int scale = 20;
 	private Color color;
 
-	public Snake(int x, int y, Color color) {
+	public Snake(int x, int y, Color color, int scale) {
+		this.scale = scale;
 		this.posX = x;
 		this.posY = y;
 		this.color = color;
 	}
 
 	public void update(int dx, int dy) {
-		posX = posX + (speed * dx);
-		posY = posY + (speed * dy);
+		posX = posX + (scale * dx);
+		posY = posY + (scale * dy);
+		if (posX > 600) {
+			posX = 0;
+		}
+		if (posX < 0) {
+			posX = 600;
+		}
+		if (posY > 400) {
+			posY = 0;
+		}
+		if (posY < 0) {
+			posY = 400;
+		}
+	}
+	
+	public void update() {
+		posX = posX ;
+		posY = posY ;
+		if (posX > 600) {
+			posX = 0;
+		}
+		if (posX < 0) {
+			posX = 600;
+		}
+		if (posY > 400) {
+			posY = 0;
+		}
+		if (posY < 0) {
+			posY = 400;
+		}
 	}
 
 	public void show(GraphicsContext gc) {
 		gc.setFill(color);
-		gc.fillRect(posX, posY, sizeX, sizeY);
+		gc.fillRect(posX, posY, scale, scale);
 
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		return "Snake [posX=" + posX + ", posY=" + posY + ", scale=" + scale + ", color=" + color + "]";
+	}
+
 	public int getPosX() {
 		return posX;
 	}
@@ -46,5 +78,4 @@ public class Snake {
 		this.posY = posY;
 	}
 
-	
 }

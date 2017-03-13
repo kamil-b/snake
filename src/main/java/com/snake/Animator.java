@@ -1,5 +1,8 @@
 package com.snake;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import javafx.animation.AnimationTimer;
@@ -13,49 +16,50 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class Animator extends AnimationTimer {
+
+	private static final long FRAME_RATE = 1000000000 / 20;
+	private int SCALE = 20;
 	private int WIDTH = 600;
 	private int HEIGHT = 400;
-	boolean up, down, left, right;
-	private Snake snake = new Snake(WIDTH / 2, HEIGHT / 2, Color.GREEN);
-	private Food food = new Food(200, 334, Color.RED);
-	int dx = 1, dy = 0;
-
+	private boolean up, down, left, right;
+	private int dx = 1, dy = 0;
+	private List<Snake> snakeList = new ArrayList<Snake>();
+	private Snake snake;
+	private Food food;
+	private long delta = 0;
+	private long lastTime = 0;
 	private Canvas canvas = new Canvas(WIDTH, HEIGHT);
 	private GraphicsContext gc = canvas.getGraphicsContext2D();
 	private VBox vbox = new VBox(canvas);
-	private Stage primaryStage;
-	private int SCORE = 0;
+	private Stage primaryStage = new Stage();
+	boolean game = true;
 
 	Animator(Stage primaryStage) {
 		this.primaryStage = primaryStage;
 		this.primaryStage.setScene(new Scene(vbox));
 		canvas.setFocusTraversable(true);
-		this.primaryStage.show();
-
-	}
-
-	// GAME LOOP
-	@Override
-	public void handle(long arg0) {
-
-		update();
-		show();
-
+		snake = new Snake(WIDTH / 2, HEIGHT / 2, Color.GREEN, SCALE);
+		snakeList.add(snake);
+		food = new Food(200, 334, Color.RED, SCALE);
+		primaryStage.show();
 	}
 
 	private boolean checkIfFoodAte() {
-		if ((Math.abs(snake.getPosX() - food.getPosX()) < 10 || Math.abs((snake.getPosX() + 10) - food.getPosX()) < 10)
+		if ((Math.abs(snake.getPosX() - food.getPosX()) < 10
+				|| Math.abs((snake.getPosX() + SCALE) - food.getPosX()) < 10)
 				&& (Math.abs(snake.getPosY() - food.getPosY()) < 10
-						|| Math.abs((snake.getPosY() + 10) - food.getPosY()) < 10)) {
+						|| Math.abs((snake.getPosY() + SCALE) - food.getPosY()) < 10)) {
 			return true;
 		}
 		return false;
 	}
 
 	private void DropNewFoodLocation() {
-		food.setPosX(new Random().nextInt(WIDTH));
-		food.setPosY(new Random().nextInt(HEIGHT));
-		SCORE++;
+		int col = WIDTH / SCALE;
+		int rows = HEIGHT / SCALE;
+		food.setPosX(new Random().nextInt(col) * SCALE);
+		food.setPosY(new Random().nextInt(rows) * SCALE);
+
 	}
 
 	private void checkIfKeyPressed() {
@@ -75,6 +79,8 @@ public class Animator extends AnimationTimer {
 					break;
 				case D:
 					right = true;
+					break;
+				default:
 					break;
 
 				}
@@ -99,6 +105,8 @@ public class Animator extends AnimationTimer {
 				case D:
 					right = false;
 					break;
+				default:
+					break;
 
 				}
 			}
@@ -108,17 +116,16 @@ public class Animator extends AnimationTimer {
 
 	private void show() {
 		gc.clearRect(0, 0, WIDTH, HEIGHT);
-		snake.show(gc);
+
+		for (Snake s : snakeList) {
+			s.show(gc);
+		}
 		food.show(gc);
+
 	}
 
 	private void update() {
 		checkIfKeyPressed();
-		if (checkIfFoodAte()) {
-			DropNewFoodLocation();
-		}
-		
-
 		if (up) {
 			dy = -1;
 			dx = 0;
@@ -135,8 +142,56 @@ public class Animator extends AnimationTimer {
 			dx = 1;
 			dy = 0;
 		}
-		snake.update(dx, dy);
-		// food.update(dx, dy);
+
+		int posX = snakeList.get(0).getPosX();
+		int posY = snakeList.get(0).getPosY();
+		snakeList.get(0).update(dx, dy);
+		for (int i = 1; i < snakeList.size(); i++) {
+			snakeList.get(i).setPosY(snakeList.get(i-1).getPosY()); 
+			snakeList.get(i).setPosX(snakeList.get(i-1).getPosX()); 
+			
+		}
+		for (int i = 0; i < snakeList.size(); i++) {
+			snakeList.get(i).update();
+		}
+
+		if (checkIfFoodAte()) {
+			DropNewFoodLocation();
+			makeSnakeLonger(dx, dy);
+		}
+
 	}
 
+	private void makeSnakeLonger(int dx, int dy) {
+		Snake snake = snakeList.get(0);
+		int posX = 0;
+		int posY = 0;
+		if (dx == 1) {
+			posX = -SCALE;
+		}
+		if (dx == -1) {
+			posX = -SCALE;
+		}
+		if (dy == -1) {
+			posY = SCALE;
+		}
+		if (dy == 1) {
+			posY = -SCALE;
+		}
+		Snake newSnake = new Snake(snake.getPosX() + posX, snake.getPosY() + posY, Color.GREEN, SCALE);
+		snakeList.add(0, newSnake);
+		System.out.println("Added new part of snake: " + newSnake.toString());
+	}
+
+	@Override
+	public void handle(long currentNanoTime) {
+
+		delta += currentNanoTime - lastTime;
+		lastTime = currentNanoTime;
+		if (delta >= FRAME_RATE) {
+			update();
+			show();
+			delta = 0;
+		}
+	}
 }
