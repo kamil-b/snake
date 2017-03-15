@@ -2,6 +2,7 @@ package com.snake;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -23,7 +24,7 @@ public class Animator extends AnimationTimer {
 	private int HEIGHT = 400;
 	private boolean up, down, left, right;
 	private int dx = 1, dy = 0;
-	private List<Snake> snakeList = new ArrayList<Snake>();
+	private LinkedList<Snake> snakeList = new LinkedList<Snake>();
 	private Snake snake;
 	private Food food;
 	private long delta = 0;
@@ -45,11 +46,14 @@ public class Animator extends AnimationTimer {
 	}
 
 	private boolean checkIfFoodAte() {
-		if ((Math.abs(snake.getPosX() - food.getPosX()) < 10
-				|| Math.abs((snake.getPosX() + SCALE) - food.getPosX()) < 10)
-				&& (Math.abs(snake.getPosY() - food.getPosY()) < 10
-						|| Math.abs((snake.getPosY() + SCALE) - food.getPosY()) < 10)) {
-			return true;
+		for (Snake snake : snakeList) {
+			if ((Math.abs(snake.getPosX() - food.getPosX()) < 10
+					|| Math.abs((snake.getPosX() + SCALE) - food.getPosX()) < 10)
+					&& (Math.abs(snake.getPosY() - food.getPosY()) < 10
+							|| Math.abs((snake.getPosY() + SCALE) - food.getPosY()) < 10)) {
+				return true;
+			}
+
 		}
 		return false;
 	}
@@ -66,7 +70,8 @@ public class Animator extends AnimationTimer {
 		canvas.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent key) {
-				System.out.println("key pressed: " + key.getCode().toString());
+				// System.out.println("key pressed: " +
+				// key.getCode().toString());
 				switch (key.getCode()) {
 				case W:
 					up = true;
@@ -91,7 +96,8 @@ public class Animator extends AnimationTimer {
 
 			@Override
 			public void handle(KeyEvent key) {
-				System.out.println("key release: " + key.getCode().toString());
+				// System.out.println("key release: " +
+				// key.getCode().toString());
 				switch (key.getCode()) {
 				case W:
 					up = false;
@@ -117,8 +123,8 @@ public class Animator extends AnimationTimer {
 	private void show() {
 		gc.clearRect(0, 0, WIDTH, HEIGHT);
 
-		for (Snake s : snakeList) {
-			s.show(gc);
+		for (int index = 0; index < snakeList.size(); index++) {
+			snakeList.get(index).show(gc);
 		}
 		food.show(gc);
 
@@ -126,6 +132,7 @@ public class Animator extends AnimationTimer {
 
 	private void update() {
 		checkIfKeyPressed();
+
 		if (up) {
 			dy = -1;
 			dx = 0;
@@ -143,24 +150,31 @@ public class Animator extends AnimationTimer {
 			dy = 0;
 		}
 
+		snakeList.get(0).update(dx, dy);
 		int posX = snakeList.get(0).getPosX();
 		int posY = snakeList.get(0).getPosY();
-		snakeList.get(0).update(dx, dy);
-		for (int i = 1; i < snakeList.size(); i++) {
-			snakeList.get(i).setPosY(snakeList.get(i-1).getPosY()); 
-			snakeList.get(i).setPosX(snakeList.get(i-1).getPosX()); 
-			
-		}
-		for (int i = 0; i < snakeList.size(); i++) {
-			snakeList.get(i).update();
-		}
 
-		if (checkIfFoodAte()) {
+		shiftPosition(posX, posY);
+
+		if (checkIfFoodAte() == true) {
 			DropNewFoodLocation();
 			makeSnakeLonger(dx, dy);
 		}
+	}
+
+	private void shiftPosition(int x, int y) {
+		snakeList.removeLast();
+		snakeList.push(new Snake(x, y, Color.GREEN, SCALE));
 
 	}
+
+	/*
+	 * private void ShiftSnakePosition() { for (int index = 0; index <
+	 * snakeList.size() - 1; index++) { snakeList.get(index +
+	 * 1).update(snakeList.get(index).getPosX(),
+	 * snakeList.get(index).getPosY()); System.out.println("UPDATE" +
+	 * snakeList.get(index).toString()); } }
+	 */
 
 	private void makeSnakeLonger(int dx, int dy) {
 		Snake snake = snakeList.get(0);
@@ -170,7 +184,7 @@ public class Animator extends AnimationTimer {
 			posX = -SCALE;
 		}
 		if (dx == -1) {
-			posX = -SCALE;
+			posX = SCALE;
 		}
 		if (dy == -1) {
 			posY = SCALE;
@@ -179,8 +193,11 @@ public class Animator extends AnimationTimer {
 			posY = -SCALE;
 		}
 		Snake newSnake = new Snake(snake.getPosX() + posX, snake.getPosY() + posY, Color.GREEN, SCALE);
-		snakeList.add(0, newSnake);
-		System.out.println("Added new part of snake: " + newSnake.toString());
+		snakeList.push(newSnake);
+
+		System.out.println("Added new part nr: " + snakeList.size());
+		System.out.println("parameters of new part: " + newSnake.toString());
+		System.out.println("old: " + snake.toString());
 	}
 
 	@Override

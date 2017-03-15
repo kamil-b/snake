@@ -7,6 +7,7 @@ public class Snake {
 
 	private int posX;
 	private int posY;
+	
 	private int scale = 20;
 	private Color color;
 
@@ -20,23 +21,6 @@ public class Snake {
 	public void update(int dx, int dy) {
 		posX = posX + (scale * dx);
 		posY = posY + (scale * dy);
-		if (posX > 600) {
-			posX = 0;
-		}
-		if (posX < 0) {
-			posX = 600;
-		}
-		if (posY > 400) {
-			posY = 0;
-		}
-		if (posY < 0) {
-			posY = 400;
-		}
-	}
-	
-	public void update() {
-		posX = posX ;
-		posY = posY ;
 		if (posX > 600) {
 			posX = 0;
 		}
