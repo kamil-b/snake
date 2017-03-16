@@ -19,6 +19,7 @@ public class Snake {
 	}
 
 	public void update(int dx, int dy) {
+		
 		posX = posX + (scale * dx);
 		posY = posY + (scale * dy);
 		if (posX > 600) {
@@ -40,7 +41,8 @@ public class Snake {
 		gc.fillRect(posX, posY, scale, scale);
 
 	}
-
+	
+	
 	@Override
 	public String toString() {
 		return "Snake [posX=" + posX + ", posY=" + posY + ", scale=" + scale + ", color=" + color + "]";

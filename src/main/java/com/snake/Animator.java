@@ -34,6 +34,7 @@ public class Animator extends AnimationTimer {
 	private VBox vbox = new VBox(canvas);
 	private Stage primaryStage = new Stage();
 	boolean game = true;
+	private int lastdx, lastdy;
 
 	Animator(Stage primaryStage) {
 		this.primaryStage = primaryStage;
@@ -47,13 +48,10 @@ public class Animator extends AnimationTimer {
 
 	private boolean checkIfFoodAte() {
 		for (Snake snake : snakeList) {
-			if ((Math.abs(snake.getPosX() - food.getPosX()) < 10
-					|| Math.abs((snake.getPosX() + SCALE) - food.getPosX()) < 10)
-					&& (Math.abs(snake.getPosY() - food.getPosY()) < 10
-							|| Math.abs((snake.getPosY() + SCALE) - food.getPosY()) < 10)) {
+			if (Math.abs((snake.getPosX() + SCALE / 2) - (food.getPosX() + SCALE / 2)) < SCALE
+					&& Math.abs((snake.getPosY() + SCALE / 2) - (food.getPosY() + SCALE / 2)) < SCALE) {
 				return true;
 			}
-
 		}
 		return false;
 	}
@@ -149,8 +147,23 @@ public class Animator extends AnimationTimer {
 			dx = 1;
 			dy = 0;
 		}
-
+		if (snakeList.size() >= 2) {
+			if (lastdx == -1 && dx == 1) {
+				dx = -1;
+			}
+			if (lastdx == 1 && dx == -1) {
+				dx = 1;
+			}
+			if (lastdy == -1 && dy == 1) {
+				dy = -1;
+			}
+			if (lastdy == 1 && dy == -1) {
+				dy = 1;
+			}
+		}
 		snakeList.get(0).update(dx, dy);
+		lastdx = dx;
+		lastdy = dy;
 		int posX = snakeList.get(0).getPosX();
 		int posY = snakeList.get(0).getPosY();
 
@@ -160,21 +173,27 @@ public class Animator extends AnimationTimer {
 			DropNewFoodLocation();
 			makeSnakeLonger(dx, dy);
 		}
+
+		checkIfHeadColideWithBody();
+	}
+
+	// TODO
+	private void checkIfHeadColideWithBody() {
+		Snake snake = snakeList.get(0);
+
+		for (int i = 1; i < snakeList.size(); i++) {
+			if (Math.abs((snake.getPosX() + SCALE / 2) - (snakeList.get(i).getPosX() + SCALE / 2)) < SCALE
+					&& Math.abs((snake.getPosY() + SCALE / 2) - (snakeList.get(i).getPosY() + SCALE / 2)) < SCALE) {
+				System.out.println("DUPA");
+			}
+		}
 	}
 
 	private void shiftPosition(int x, int y) {
-		snakeList.removeLast();
+
 		snakeList.push(new Snake(x, y, Color.GREEN, SCALE));
-
+		snakeList.removeLast();
 	}
-
-	/*
-	 * private void ShiftSnakePosition() { for (int index = 0; index <
-	 * snakeList.size() - 1; index++) { snakeList.get(index +
-	 * 1).update(snakeList.get(index).getPosX(),
-	 * snakeList.get(index).getPosY()); System.out.println("UPDATE" +
-	 * snakeList.get(index).toString()); } }
-	 */
 
 	private void makeSnakeLonger(int dx, int dy) {
 		Snake snake = snakeList.get(0);
